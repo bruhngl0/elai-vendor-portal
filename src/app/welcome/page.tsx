@@ -8,7 +8,7 @@ export default function WelcomePage() {
             Welcome to ELAI Marketplace!
           </h1>
           <p className="text-lg text-gray-600 mb-8">
-            Congratulations! Your account has been successfully activated and you&apos;re now ready to start selling.
+            Congratulations! Your account has been successfully activated and you&apos;re now ready to start selling. cheers!.
           </p>
 
           <div className="bg-green-50 p-6 rounded-lg mb-8">
