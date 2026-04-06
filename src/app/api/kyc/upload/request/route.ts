@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { auth } from '@/lib/auth'
 import { uploadRequestSchema } from '@/lib/validations'
 
 const supabase = createClient(
@@ -23,10 +22,7 @@ export async function POST(request: NextRequest) {
     const { fileName, fileType, email } = validationResult.data
 
     let userId: string
-    const session = await auth()
-    if (session?.user?.id) {
-      userId = session.user.id
-    } else if (email) {
+    if (email) {
       let { data: user } = await supabase.from('users').select('*').eq('email', email).maybeSingle()
       if (!user) {
         const { data: newUser, error } = await supabase.from('users').insert({ email, updatedAt: new Date().toISOString() }).select().single()

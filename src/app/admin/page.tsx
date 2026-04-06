@@ -141,9 +141,8 @@ export default function AdminDashboard() {
 
   const getFileUrl = (key?: string) => {
     if (!key) return '#'
-    // With Supabase, we can use the public URL or signed URL. 
-    // Assuming the bucket is public or we just need the format:
-    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'my-bucket'}/${key}`
+    // Use the secure API router to generate a temporary signed URL to view private KYC files
+    return `/api/admin/kyc/file?key=${encodeURIComponent(key)}`
   }
 
   if (loading) {
@@ -293,7 +292,7 @@ export default function AdminDashboard() {
                   {/* Business Details */}
                   <div>
                     <h3 className="text-sm font-medium text-gray-900 mb-2">Business Details</h3>
-                    <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm">
+                    <div className="bg-gray-50 p-4 rounded-lg space-y-2 text-sm text-gray-900">
                       <div><strong>Name:</strong> {selectedApplication.businessName}</div>
                       <div><strong>Tax ID:</strong> {selectedApplication.taxIdNumber}</div>
                       <div><strong>Address:</strong> {selectedApplication.businessAddress}</div>
@@ -311,7 +310,7 @@ export default function AdminDashboard() {
                           target="_blank"
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         >
-                          <span className="text-sm">Business License</span>
+                          <span className="text-sm text-gray-900">Business License</span>
                           <span className="text-blue-600 text-sm">View PDF</span>
                         </a>
                       )}
@@ -321,7 +320,7 @@ export default function AdminDashboard() {
                           target="_blank"
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         >
-                          <span className="text-sm">Tax ID Document</span>
+                          <span className="text-sm text-gray-900">Tax ID Document</span>
                           <span className="text-blue-600 text-sm">View Image</span>
                         </a>
                       )}
@@ -331,7 +330,7 @@ export default function AdminDashboard() {
                           target="_blank"
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         >
-                          <span className="text-sm">Government ID</span>
+                          <span className="text-sm text-gray-900">Government ID</span>
                           <span className="text-blue-600 text-sm">View Image</span>
                         </a>
                       )}
@@ -344,7 +343,7 @@ export default function AdminDashboard() {
                     <textarea
                       value={reviewNotes}
                       onChange={(e) => setReviewNotes(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       rows={3}
                       placeholder="Add internal notes about this application..."
                     />
