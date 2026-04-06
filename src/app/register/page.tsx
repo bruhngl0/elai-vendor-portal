@@ -793,7 +793,12 @@ export default function RegisterPage() {
   };
 
   const handleFileUpload = (field: string, file: File) => {
-    updateFormData(field, file);
+    if (file.size > 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, [field]: "File size exceeds 1MB max limit." }));
+      setFormData((prev) => ({ ...prev, [field]: null }));
+    } else {
+      updateFormData(field, file);
+    }
   };
 
   const validateStep = (step: number): boolean => {

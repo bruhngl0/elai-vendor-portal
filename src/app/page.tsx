@@ -10,28 +10,28 @@ export default function Home() {
     >
       {/* Header */}
       <header className="w-full">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
           <nav
-            className="flex justify-center space-x-16 text-base font-medium tracking-wide"
+            className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 md:gap-x-16 text-sm font-medium tracking-wide"
             style={{ fontFamily: "Helvetica", fontSize: "12px" }}
           >
             <Link href="/" className="hover:opacity-60 transition-opacity">
-              HOME
+
             </Link>
             <Link href="#about" className="hover:opacity-60 transition-opacity">
-              ABOUT
+
             </Link>
             <Link
               href="#collection"
               className="hover:opacity-60 transition-opacity"
             >
-              PRICING
+
             </Link>
             <Link
               href="#work"
               className="hover:opacity-60 transition-opacity flex items-center gap-1"
             >
-              REACH OUT
+
             </Link>
           </nav>
         </div>
@@ -40,8 +40,8 @@ export default function Home() {
       <section className="relative" style={{ minHeight: "85vh" }}>
         {/* Botanical shadow — left side */}
         <div
-          className="absolute top-0 left-0 h-full pointer-events-none select-none"
-          style={{ width: "22%", zIndex: 1 }}
+          className="absolute top-0 left-0 h-full pointer-events-none select-none hidden md:block w-[22%]"
+          style={{ zIndex: 1 }}
           aria-hidden="true"
         >
           {/* SVG botanical placeholder mimicking the leaf/branch shadow */}
@@ -174,26 +174,22 @@ export default function Home() {
           {/* Placeholder rectangle mimicking the lifestyle product photo */}
           <div className="w-full h-full flex items-end justify-center pb-0 pr-0 relative">
             <span
-              className="absolute text-xs tracking-widest uppercase"
+              className="absolute text-xs tracking-widest uppercase w-[90%] max-w-[700px] md:w-[700px] left-1/2 md:left-[80%] -translate-x-1/2"
               style={{
                 color: "#34421E",
                 bottom: "0%",
-                left: "80%",
-                transform: "translateX(-50%)",
                 whiteSpace: "nowrap",
-
-                width: "700px",
               }}
             >
-              <img src="/main.png" />
+              <img src="/main.png" className="w-full h-auto object-cover" alt="Main product" />
             </span>
           </div>
         </div>
 
         {/* Center content */}
         <div
-          className="relative flex flex-col items-center text-center"
-          style={{ paddingTop: "160px", zIndex: 2 }}
+          className="relative flex flex-col items-center text-center pt-[100px] md:pt-[160px]"
+          style={{ zIndex: 2 }}
         >
           {/* Logo placeholder */}
           <div
@@ -212,19 +208,10 @@ export default function Home() {
               with a stylized dot above the "i".
             */}
             <div
-              style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: 12,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
-              }}
+              className="w-full h-full rounded-xl flex flex-col items-center justify-center gap-[6px]"
               aria-label="Elai logo placeholder"
             >
-              <img src="/logo.png" alt="logo" />
+              <img src="/logo.png" alt="logo" className="max-w-[200px] md:max-w-none" />
             </div>
           </div>
 
@@ -271,12 +258,7 @@ export default function Home() {
       {/* Value Proposition Section */}
       {/* Value Proposition Section */}
       <section
-        style={{
-          backgroundColor: "#FFF7D4",
-          position: "relative",
-          overflow: "hidden",
-          padding: "80px 0 100px",
-        }}
+        className="bg-[#FFF7D4] relative overflow-hidden py-16 md:py-24"
       >
         {/* Botanical shadow top-left */}
         <svg
@@ -380,18 +362,10 @@ export default function Home() {
         </svg>
 
         <div
-          style={{
-            maxWidth: "1280px",
-            margin: "0 auto",
-            padding: "0 48px",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "64px",
-            alignItems: "center",
-          }}
+          className="max-w-[1280px] mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center"
         >
           {/* Left: headline + subtext */}
-          <div>
+          <div className="text-center md:text-left flex flex-col items-center md:items-start">
             <h2
               style={{
                 fontFamily: "Georgia, 'Times New Roman', serif",
@@ -427,14 +401,7 @@ export default function Home() {
           </div>
 
           {/* Right: three stacked content cards */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "16px",
-              alignItems: "flex-end",
-            }}
-          >
+          <div className="flex flex-col gap-4 items-center md:items-end w-full mt-8 md:mt-0">
             {[
               {
                 title: "Global Reach",
@@ -451,14 +418,7 @@ export default function Home() {
             ].map((card, i) => (
               <div
                 key={i}
-                style={{
-                  width: "88%",
-                  backgroundColor: "#FFF7D4",
-                  borderRadius: "16px",
-                  boxShadow: "4px 6px 24px rgba(52,66,30,0.13)",
-                  border: "1px solid #2E3E20",
-                  padding: "28px 32px",
-                }}
+                className="w-full md:w-[88%] bg-[#FFF7D4] rounded-2xl border border-[#2E3E20] p-6 md:p-8 shadow-[4px_6px_24px_rgba(52,66,30,0.13)]"
               >
                 <h3
                   style={{
