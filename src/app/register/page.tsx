@@ -317,7 +317,7 @@ function FileBox({
                 }}
               >
                 {accept.replace(/\./g, "").replace(/,/g, " · ").toUpperCase()}{" "}
-                UP TO 10MB
+                UP TO 1MB
               </p>
             </>
           )}

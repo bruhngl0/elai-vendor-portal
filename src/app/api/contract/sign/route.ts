@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 import { emailService } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
@@ -14,10 +14,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get application details
-    const application = await prisma.kYCApplication.findUnique({
-      where: { id: applicationId },
-      include: { user: true }
-    })
+    const { data: application } = await supabase
+      .from('KYCApplication')
+      .select('*, user:users(*)')
+      .eq('id', applicationId)
+      .maybeSingle()
 
     if (!application) {
       return NextResponse.json(
@@ -27,23 +28,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Update application to show contract signed
-    await prisma.kYCApplication.update({
-      where: { id: applicationId },
-      data: {
-        updatedAt: new Date(),
-        // Add a field for contract signature if needed in schema
-        reviewerNotes: `Contract signed on ${signatureDate}`,
-      }
-    })
+    await supabase.from('KYCApplication').update({
+      updatedAt: new Date().toISOString(),
+      // Add a field for contract signature if needed in schema
+      reviewerNotes: `Contract signed on ${signatureDate}`,
+    }).eq('id', applicationId)
 
     // Add to review history
-    await prisma.kYCReviewHistory.create({
-      data: {
-        applicationId: applicationId,
-        reviewerId: 'system', // System action
-        action: 'CONTRACT_SIGNED',
-        notes: `Seller agreement signed electronically on ${signatureDate}`,
-      }
+    await supabase.from('KYCReviewHistory').insert({
+      applicationId: applicationId,
+      reviewerId: 'system', // System action
+      action: 'CONTRACT_SIGNED',
+      notes: `Seller agreement signed electronically on ${signatureDate}`,
     })
 
     // Send confirmation email

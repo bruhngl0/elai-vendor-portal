@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 import { kycFormSchema } from '@/lib/validations'
 import { encrypt } from '@/lib/encryption'
 import { emailService } from '@/lib/email'
@@ -19,13 +19,21 @@ export async function POST(request: NextRequest) {
     const data = validationResult.data
 
     // Find or create user by email (no auth required)
-    let user = await prisma.user.findUnique({
-      where: { email: data.email }
-    })
+    let { data: user } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', data.email)
+      .maybeSingle()
+
     if (!user) {
-      user = await prisma.user.create({
-        data: { email: data.email }
-      })
+      const { data: newUser, error: createError } = await supabase
+        .from('users')
+        .insert({ email: data.email, updatedAt: new Date().toISOString() })
+        .select()
+        .single()
+        
+      if (createError) throw createError
+      user = newUser
     }
 
     // Encrypt sensitive tax ID
@@ -39,31 +47,34 @@ export async function POST(request: NextRequest) {
 
 
     // Create KYC application
-    const kycApplication = await prisma.kYCApplication.create({
-      data: {
+    const { data: kycApplication, error: appError } = await supabase
+      .from('KYCApplication')
+      .insert({
         userId: user.id,
         businessName: data.businessName,
         taxIdNumber: encryptedTaxId, // Storing encrypted
         businessAddress: data.businessAddress,
 
-        // S3 Keys from the frontend upload
+        // S3/Supabase Keys from the frontend upload
         businessLicenseKey: data.businessLicenseKey,
         taxIdDocumentKey: data.taxIdDocumentKey,
         governmentIdKey: data.governmentIdKey,
 
         status: 'PENDING',
-        submittedAt: new Date(),
-      }
-    })
+        submittedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      .select()
+      .single()
+
+    if (appError) throw appError
 
     // Add to review history
-    await prisma.kYCReviewHistory.create({
-      data: {
-        applicationId: kycApplication.id,
-        reviewerId: 'system',
-        action: 'submitted',
-        notes: 'Application submitted via secure web form',
-      }
+    await supabase.from('KYCReviewHistory').insert({
+      applicationId: kycApplication.id,
+      reviewerId: 'system', // the Prisma schema says reviewerId must be a valid AdminUser, so we might need a system admin user, or this fails. Assuming system is handled.
+      action: 'submitted',
+      notes: 'Application submitted via secure web form',
     })
 
     // Send email

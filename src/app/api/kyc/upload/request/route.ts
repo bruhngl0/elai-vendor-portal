@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { createClient } from '@supabase/supabase-js'
 import { auth } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
 import { uploadRequestSchema } from '@/lib/validations'
 
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-})
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,9 +27,11 @@ export async function POST(request: NextRequest) {
     if (session?.user?.id) {
       userId = session.user.id
     } else if (email) {
-      let user = await prisma.user.findUnique({ where: { email } })
+      let { data: user } = await supabase.from('users').select('*').eq('email', email).maybeSingle()
       if (!user) {
-        user = await prisma.user.create({ data: { email } })
+        const { data: newUser, error } = await supabase.from('users').insert({ email, updatedAt: new Date().toISOString() }).select().single()
+        if (error) throw error
+        user = newUser
       }
       userId = user.id
     } else {
@@ -44,17 +41,17 @@ export async function POST(request: NextRequest) {
     // Generate unique file key scoped to user
     const fileKey = `kyc-documents/${userId}/${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`
 
-    // Create pre-signed URL for upload
-    const command = new PutObjectCommand({
-      Bucket: process.env.AWS_S3_BUCKET!,
-      Key: fileKey,
-      ContentType: fileType,
-    })
+    // Create Supabase signed URL for upload
+    const { data, error } = await supabase.storage
+      .from(process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'my-bucket')
+      .createSignedUploadUrl(fileKey)
 
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 })
+    if (error || !data) {
+      throw error || new Error('No signed url returned')
+    }
 
     return NextResponse.json({
-      uploadUrl: signedUrl,
+      uploadUrl: data.signedUrl,
       fileKey: fileKey,
     })
   } catch (error) {

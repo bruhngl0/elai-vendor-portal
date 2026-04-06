@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,18 +9,14 @@ export async function GET(request: NextRequest) {
 
     if (applicationId) {
       // Get specific application status
-      const application = await prisma.kYCApplication.findUnique({
-        where: { id: applicationId },
-        include: {
-          user: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true,
-            }
-          }
-        }
-      })
+      const { data: application } = await supabase
+        .from('KYCApplication')
+        .select(`
+          *,
+          user:users ( firstName, lastName, email )
+        `)
+        .eq('id', applicationId)
+        .maybeSingle()
 
       if (!application) {
         return NextResponse.json(
@@ -42,18 +38,22 @@ export async function GET(request: NextRequest) {
 
     if (userId) {
       // Get all applications for a user
-      const applications = await prisma.kYCApplication.findMany({
-        where: { userId },
-        orderBy: { submittedAt: 'desc' },
-        select: {
-          id: true,
-          status: true,
-          businessName: true,
-          submittedAt: true,
-          reviewedAt: true,
-          rejectionReason: true,
-        }
-      })
+      const { data: applications } = await supabase
+        .from('KYCApplication')
+        .select(`
+          id,
+          status,
+          businessName,
+          submittedAt,
+          reviewedAt,
+          rejectionReason
+        `)
+        .eq('userId', userId)
+        .order('submittedAt', { ascending: false })
+
+      if (!applications) {
+        return NextResponse.json({ applications: [] })
+      }
 
       return NextResponse.json({
         applications: applications.map(app => ({

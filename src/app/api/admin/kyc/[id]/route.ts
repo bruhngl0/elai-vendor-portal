@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(
   request: NextRequest,
@@ -7,33 +7,20 @@ export async function GET(
 ) {
   const params = await props.params;
   try {
-    const application = await prisma.kYCApplication.findUnique({
-      where: { id: params.id },
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          }
-        },
-        reviewHistory: {
-          include: {
-            reviewer: {
-              include: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                  }
-                }
-              }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    })
+    const { data: application } = await supabase
+      .from('KYCApplication')
+      .select(`
+        *,
+        user:users ( firstName, lastName, email ),
+        reviewHistory:KYCReviewHistory (
+          *,
+          reviewer:AdminUser (
+            user:users ( firstName, lastName )
+          )
+        )
+      `)
+      .eq('id', params.id)
+      .maybeSingle()
 
     if (!application) {
       return NextResponse.json(
@@ -111,19 +98,19 @@ export async function POST(
     }
 
     // Update application
-    const updatedApplication = await prisma.kYCApplication.update({
-      where: { id: params.id },
-      data: updateData,
-    })
+    const { data: updatedApplication } = await supabase
+      .from('KYCApplication')
+      .update(updateData)
+      .eq('id', params.id)
+      .select()
+      .single()
 
     // Add to review history
-    await prisma.kYCReviewHistory.create({
-      data: {
-        applicationId: params.id,
-        reviewerId,
-        action: action.replace('_', ' ').toUpperCase(),
-        notes: notes || null,
-      }
+    await supabase.from('KYCReviewHistory').insert({
+      applicationId: params.id,
+      reviewerId,
+      action: action.replace('_', ' ').toUpperCase(),
+      notes: notes || null,
     })
 
     return NextResponse.json({

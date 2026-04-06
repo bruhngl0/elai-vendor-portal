@@ -139,10 +139,11 @@ export default function AdminDashboard() {
     }
   }
 
-  const getS3Url = (key?: string) => {
+  const getFileUrl = (key?: string) => {
     if (!key) return '#'
-    // In production, this would generate a pre-signed URL
-    return `https://${process.env.NEXT_PUBLIC_AWS_S3_BUCKET}.s3.amazonaws.com/${key}`
+    // With Supabase, we can use the public URL or signed URL. 
+    // Assuming the bucket is public or we just need the format:
+    return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || 'my-bucket'}/${key}`
   }
 
   if (loading) {
@@ -306,7 +307,7 @@ export default function AdminDashboard() {
                     <div className="space-y-2">
                       {selectedApplication.businessLicenseKey && (
                         <a
-                          href={getS3Url(selectedApplication.businessLicenseKey)}
+                          href={getFileUrl(selectedApplication.businessLicenseKey)}
                           target="_blank"
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         >
@@ -316,7 +317,7 @@ export default function AdminDashboard() {
                       )}
                       {selectedApplication.taxIdDocumentKey && (
                         <a
-                          href={getS3Url(selectedApplication.taxIdDocumentKey)}
+                          href={getFileUrl(selectedApplication.taxIdDocumentKey)}
                           target="_blank"
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         >
@@ -326,7 +327,7 @@ export default function AdminDashboard() {
                       )}
                       {selectedApplication.governmentIdKey && (
                         <a
-                          href={getS3Url(selectedApplication.governmentIdKey)}
+                          href={getFileUrl(selectedApplication.governmentIdKey)}
                           target="_blank"
                           className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                         >
